@@ -2,15 +2,18 @@
 
 a^b. 
 
+## Flujo de procesamiento
+
+```text
 Archivo subscriptions.json
        |
-       | Tipo: String (Ruta del archivo)
+       | Tipo: String (ruta del archivo)
        v
 Leer archivo de suscripciones (en el Driver)
        |
-       | Tipo: List(Option[Subscription])
+       | Tipo: List[Option[Subscription]]
        v
-Paralelizar 
+Paralelizar
        |
        | Tipo: RDD[Subscription]
        v
@@ -24,18 +27,20 @@ Extraer entidades (flatMap)
        v
 Mapear para conteo (map)
        |
-       | Tipo: RDD[((String, String), Int)]  <-- Representa ((Tipo, Nombre), 1)
+       | Tipo: RDD[((String, String), Int)]
+       |       Representa: ((Tipo, Nombre), 1)
        v
 Contar por clave (reduceByKey)
        |
-       | Tipo: RDD[((String, String), Int)]  <-- Representa ((Tipo, Nombre), Total)
+       | Tipo: RDD[((String, String), Int)]
+       |       Representa: ((Tipo, Nombre), Total)
        v
-Traer datos ordenados al Driver y mostrar 
+Traer datos ordenados al Driver y mostrar
        |
        | Tipo: Array[((String, String), Int)]
        v
-Consola (impresion final)          
-
+Consola (impresión final)
+```
 
 Los pasos de paralelizar y ordenar (sortBy) no pueden describirse mediante map, flatMap o reduceByKey porque cumplen funciones de distribución, coordinación, recolección u ordenamiento global de los datos.
 
