@@ -56,6 +56,7 @@ object FileIO {
     } catch {
       case _: Exception =>
         println(s"Warning: Failed to download from '$url')")
+        None
     }
   }
 
