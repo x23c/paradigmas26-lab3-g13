@@ -54,6 +54,16 @@ object Analyzer {
   def countInstancesOf (entities: RDD[((String, String),Int)]): RDD[((String, String),Int)] = {
     entities.reduceByKey(_+_)
   }
+//para ordenar segun el 2do atributo de la tupla, desempata con el tipo
+//x._2 es para ordenar segun num, x._1._1 por tipo
+  def ordenarDescendente(
+    entities: RDD[((String, String), Int)]
+  ): RDD[((String, String), Int)] = {
+
+    entities.sortBy(
+      x => (-x._2, x._1._1)
+    )
+  }
 
   /**
    * Count total entities and entities by type.
