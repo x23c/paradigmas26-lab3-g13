@@ -31,17 +31,28 @@ object Analyzer {
     }
   }
 
-  /**
-   * Count occurrences of each entity (grouped by type and name).
-   * @param entities list of detected entities
-   * @return map from (entityType, entityName) to count
-   */
-  def countEntities(entities: RDD[NamedEntity]): Map[(String, String), Int] = {
-    entities
-      .map(entity => ((entity.entityType, entity.text), 1))
-      .reduceByKey(_ + _)
-      .collect()
-      .toMap
+  // /**
+  //  * Count occurrences of each entity (grouped by type and name).
+  //  * @param entities list of detected entities
+  //  * @return map from (entityType, entityName) to count
+  //  */
+  // def countEntities(entities: RDD[NamedEntity]): Map[(String, String), Int] = {
+  //   entities
+  //     .map(entity => ((entity.entityType, entity.text), 1))
+  //     .reduceByKey(_ + _)
+  //     .collect()
+  //     .toMap
+  // }
+//funcion para mapear de RDD[NamedEntity] a RDD[(Tipo,palabra),1]
+  def transformRDD (entities: RDD[NamedEntity]): RDD[((String, String), Int)] ={
+    entities.map(entity=>
+    ((entity.entityType, entity.text),1))
+  }
+
+
+//cuenta la cantidad de veces q aparece la misma palabra
+  def countInstancesOf (entities: RDD[((String, String),Int)]): RDD[((String, String),Int)] = {
+    entities.reduceByKey(_+_)
   }
 
   /**
