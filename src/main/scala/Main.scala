@@ -38,6 +38,9 @@ object Main {
     //2a: cargar las suscripciones en un RDD
     val subscriptionsRDD = sc.parallelize(subscriptions)
 
+    // PIPELINE 1: Descargar feeds, parsear posts y filtrado 
+    val startPipeline1 = System.currentTimeMillis()
+
     // Download feeds and parse posts, tracking success/failure
     val filteredPosts = subscriptionsRDD.flatMap { sub =>
       Try(FileIO.downloadFeed(sub.url)) match {
@@ -64,6 +67,12 @@ object Main {
     }.cache()
     // ejecuto la funcion
     val totalPosts = filteredPosts.count()
+
+    val endPipeline1 = System.currentTimeMillis()
+    val durationPipeline1 = (endPipeline1 - startPipeline1) / 1000.0
+    println(f"Tiempo de descarga, parseo y filtrado: $durationPipeline1%.3f segundos")
+    println()
+    // PIPELINE 1 end
 
     // Count feed successes/failures
     val feedsSuccess = feedsOk.value
@@ -103,6 +112,9 @@ object Main {
       return
     }
 
+    // PIPELINE 2: Carga de diccionarios y detección de entidades
+    val startPipeline2 = System.currentTimeMillis()
+
     // Load dictionaries
     val dictionary = Dictionary.loadAll(cmdArgs.entitiesDir)
 
@@ -110,7 +122,7 @@ object Main {
     val allEntities = filteredPosts.flatMap { post =>
       val combinedText = post.title + " " + post.selftext
       Analyzer.detectEntities(combinedText, dictionary)
-    }
+    }.cache()
 
     // Count entities
    // val entityCounts = Analyzer.countEntities(allEntities)
@@ -124,6 +136,14 @@ object Main {
     val entityCounts = sortedEntities.collect().toMap
 
     val typeStats = Analyzer.countByType(allEntities)
+
+    allEntities.unpersist()
+
+    val endPipeline2 = System.currentTimeMillis()
+    val durationPipeline2 = (endPipeline2 - startPipeline2) / 1000.0
+    println(f"Tiempo de detección y conteo de entidades: $durationPipeline2%.3f segundos")
+    println()
+    // PIPELINE 2 end
 
     println(Formatters.formatTypeStats(typeStats))
     println()
