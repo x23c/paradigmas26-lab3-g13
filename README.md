@@ -50,7 +50,7 @@ All arguments are optional:
 - `--top-k <n>`: Number of top entities to display (default: `10`)
 
 ## Project Structure
-
+- `src/main/resources/`: Output terminal config
 - `src/main/scala/`: Source code
   - `Main.scala`: Entry point and orchestration
   - `FileIO.scala`: File and network I/O operations
