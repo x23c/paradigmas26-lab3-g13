@@ -68,7 +68,6 @@ Inicialmente en el driver, luego a la hora de realizar los analisis/transformaci
 
 
 ## EJERCICIO 4
-
 a. ¿Por qué los Accumulators solo deben usarse para métricas y no para tomar decisiones lógicas dentro de las etapas distribuidas del pipeline? ¿En qué situación un Accumulator puede dar un valor incorrecto?
 Los Accumulators en Spark son variables compartidas pensadas para recolectar metricas desde los workers hacia el driver. No estan diseñados para influir en la logica del programa.
 No deben usarse para desiciones logicas porque Spark se ejecuta de forma distribuida y perezosa, lo que nos lleva a no poder confiar en algun estado global certero durante el procesamiento.
@@ -84,11 +83,31 @@ b.¿En qué momento del pipeline está disponible el valor de un Accumulator par
 El valor de un accumulator solo es confiable en el driver después de que una acción completa (count(), collect(), reduce(), etc.).
 c.Comparen el tiempo que tarda cada etapa del pipeline que midieron en la versión no paralelizada y la versión con Spark. ¿Qué conclusiones pueden sacar? Para la cantidad de datos que estamos trabajando, ¿se aprecia la diferencia? Justifique por qué. Nota: La comparación debe realizarse en ejecuciones sobre la misma computadora y la misma conexión a internet.
 
+c. Comparen el tiempo que tarda cada etapa del pipeline que midieron en la versión no paralelizada y la versión con Spark. ¿Qué conclusiones pueden sacar? Para la cantidad de datos que estamos trabajando, ¿se aprecia la diferencia? Justifique por qué. Nota: La comparación debe realizarse en ejecuciones sobre la misma computadora y la misma conexión a internet.
+
+Tiempo de descarga, parseo y filtrado de entidades: 20,222 segundos -> Lineal
+Tiempo de descarga, parseo y filtrado de entidades: 6,034 segundo -> Distribuido
+
+Tiempo de detección y conteo de entidades: 2,065 segundos -> Lineal
+Tiempo de detección y conteo de entidades: 0,089 segundos -> Distribuido
+
+Spark es notablemente más rápido que la versión lineal, incluso con un volumen pequeño de datos. La versión distribuida completa todo el pipeline en aproximadamente 6 segundos, mientras que la lineal tarda más de 22 segundos, casi 4 veces más.
+
+La mayor diferencia se observa en la detección de entidades, donde Spark aprovecha todos los núcleos del procesador para trabajar en paralelo. La descarga de feeds también mejora, pero está más limitada por la conexión a internet y la API de Reddit.
+
+Para la cantidad de datos analizada (pocos subreddits y posts), la diferencia ya es claramente perceptible. En un escenario con mayor volumen de datos, esta brecha se amplificaría aún más, volviendo la versión lineal impráctica frente a la escalabilidad de Spark.
 
 
-EJERCICIO 5:
-a. Sin usar .cache() en filteredPosts, la descarga de feeds se repetiría 5 veces porque hay 5 acciones terminales que dependen directa o indirectamente de filteredPosts.
 
-b. Llamar a collect() entre los pasos "a" y "b" del ejercicio 3 es incorrecto porque convierte un RDD distribuido en una colección local en el driver, destruyendo la naturaleza paralela del pipeline. En resumen, collect() debe ser la última operación del pipeline, solo cuando se necesitan resultados finales pequeños. Interrumpir un pipeline distribuido con collect() anula la paralelización y la escalabilidad.
+## EJERCICIO 5:
+a. ¿Qué ocurriría si no llamaran a cache()? ¿Cuántas veces se ejecutaría la descarga de feeds? 
 
-c. El RDD se almacena en memoria recién en la PRIMERA acción terminal que lo usa.
+Sin usar .cache() en filteredPosts, la descarga de feeds se repetiría 5 veces porque hay 5 acciones terminales que dependen directa o indirectamente de filteredPosts.
+
+b. ¿Por qué es incorrecto llamar a collect() entre los pasos "a" y "b" del ejercicio 3 y luego continuar el pipeline? ¿Qué consecuencia tiene sobre la distribución del trabajo? 
+
+Llamar a collect() entre los pasos "a" y "b" del ejercicio 3 es incorrecto porque convierte un RDD distribuido en una colección local en el driver, destruyendo la naturaleza paralela del pipeline. En resumen, collect() debe ser la última operación del pipeline, solo cuando se necesitan resultados finales pequeños. Interrumpir un pipeline distribuido con collect() anula la paralelización y la escalabilidad.
+
+c. cache() es también lazy. ¿En qué momento se almacena realmente el RDD en memoria? 
+
+El RDD se almacena en memoria recién en la PRIMERA acción terminal que lo usa.
