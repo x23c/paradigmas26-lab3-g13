@@ -1,4 +1,4 @@
-object Dictionary {
+object Dictionary extends Serializable {
 
   def loadFromFile(filePath: String, entityType: String): Option[List[NamedEntity]] = {
     FileIO.readDictionaryFile(filePath).map { lines =>

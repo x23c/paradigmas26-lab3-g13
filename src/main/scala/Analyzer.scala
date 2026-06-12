@@ -1,6 +1,6 @@
 import org.apache.spark.rdd.RDD
 
-object Analyzer {
+object Analyzer extends Serializable {
 
   /**
    * Filter out empty or irrelevant posts.
