@@ -65,3 +65,10 @@ En la funcion reduceByKey uso explicitamente _ + _ que cumple ambas propiedades 
 c.¿Dónde se hace la lectura del diccionario de entidades? ¿En el driver o los workers?
 
 Inicialmente en el driver, luego a la hora de realizar los analisis/transformaciones Spark envia una copia del diccionario a los workers para que puedan usarlo durante el procesamiento distribuido.
+
+EJERCICIO 5:
+a. Sin usar .cache() en filteredPosts, la descarga de feeds se repetiría 5 veces porque hay 5 acciones terminales que dependen directa o indirectamente de filteredPosts.
+
+b. Llamar a collect() entre los pasos "a" y "b" del ejercicio 3 es incorrecto porque convierte un RDD distribuido en una colección local en el driver, destruyendo la naturaleza paralela del pipeline. En resumen, collect() debe ser la última operación del pipeline, solo cuando se necesitan resultados finales pequeños. Interrumpir un pipeline distribuido con collect() anula la paralelización y la escalabilidad.
+
+c. El RDD se almacena en memoria recién en la PRIMERA acción terminal que lo usa.
