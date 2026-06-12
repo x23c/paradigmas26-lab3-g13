@@ -51,3 +51,17 @@ d. Las funciones que se pasan a Spark deben ser serializables para que puedan en
 
 ## EJERCICIO 2:
 Si la excepción se propaga sin ser capturada dentro de la función del flatMap, Spark interpretaria que la tarea en ejecución fallo. El error interrumpiria la ejecución de todo el pipeline y cancelaria el procesamiento de los demás feeds que si eran válidos.
+
+## EJERCICIO 3:
+a. reduceByKey es una barrera de sincronización. ¿Qué ocurre en el cluster en ese punto? ¿Por qué es inevitable para este problema?
+Cuando ejecutamos reduceByKey Spark debe reunir todas las ocurrencias de una misma clave (tipo,entidad) para poder sumarlas. Para lograrlo realiza unshuffle para redistribuir los datos entre los workers demodo que todas las tuplas con la misma clabe terminen en el mismo worker. Es una barrera de sincronizacion porque antes de continuar se debe esperar a que todos los workers envien los datos correspondientes. Es un problema inevitable porque las apariciones de una misma entidad pueden encontrarse en distintos workers. Para obtener el conteo de todo se necesita reunir y combinar los resultados.
+
+b. ¿Qué restricciones debe cumplir la función que se le pasa a reduceByKey? Piensen en conmutatividad y asociatividad.
+
+Como Spark combina los valores en cualquier ordeny en distintos nodos del cluster la funcion debe ser asocitiva y conmutativa.
+
+En la funcion reduceByKey uso explicitamente _ + _ que cumple ambas propiedades para los numeros enteros.
+
+c.¿Dónde se hace la lectura del diccionario de entidades? ¿En el driver o los workers?
+
+Inicialmente en el driver, luego a la hora de realizar los analisis/transformaciones Spark envia una copia del diccionario a los workers para que puedan usarlo durante el procesamiento distribuido.

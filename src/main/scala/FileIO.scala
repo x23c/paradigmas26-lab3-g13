@@ -55,8 +55,8 @@ object FileIO {
       Some(content)
     } catch {
       case _: Exception =>
-        println(s"Warning: Failed to download from '$url')")
-        None
+      println(s"Warning: Failed to download from '$url'")
+      None
     }
   }
 

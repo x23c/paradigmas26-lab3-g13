@@ -113,7 +113,16 @@ object Main {
     }
 
     // Count entities
-    val entityCounts = Analyzer.countEntities(allEntities)
+   // val entityCounts = Analyzer.countEntities(allEntities)
+    val mappedEntities = Analyzer.transformRDD(allEntities)
+    val countedEntities = Analyzer.countInstancesOf(mappedEntities)
+    val sortedEntities = Analyzer.ordenarDescendente(countedEntities)
+    sortedEntities.collect().foreach {
+          case ((tipo, entidad), cantidad) =>
+            println(s"[$tipo] $entidad: $cantidad apariciones")
+          }
+    val entityCounts = sortedEntities.collect().toMap
+
     val typeStats = Analyzer.countByType(allEntities)
 
     println(Formatters.formatTypeStats(typeStats))
